@@ -14,12 +14,13 @@ import 'types.dart';
 
 bool showIntermediary = false;
 bool showUnmapped = false;
+int maxResults = 100;
 
 bool useHttps = true;
 String host = "linkieapi.shedaniel.me";
 
 const encoder = JsonEncoder.withIndent("    ");
-const versionNumber = "0.1.0";
+const versionNumber = "0.1.1";
 final client = Client();
 
 final logger = Logger("linkie");
@@ -44,22 +45,30 @@ Future<void> main(List<String> args) async {
   final runner = CommandRunner("linkie", "yes it links the things");
 
   runner.argParser.addFlag("intermediary",
-      abbr: "i", help: "Show intermediary names", callback: (value) => showIntermediary = value);
-  runner.argParser
-      .addFlag("unmapped", abbr: "u", help: "Show unmapped names", callback: (value) => showUnmapped = value);
+      abbr: "i", help: "Show intermediary names", negatable: false, callback: (value) => showIntermediary = value);
+  runner.argParser.addFlag("unmapped",
+      abbr: "u", help: "Show unmapped names", negatable: false, callback: (value) => showUnmapped = value);
+  runner.argParser.addOption("max", abbr: "m", help: "How many results to show", defaultsTo: "100", callback: (value) {
+    int? max = int.tryParse(value!);
+    if (max == null || max < 0) {
+      logger.severe("malformed max result count '$value'");
+      exit(0);
+    }
+
+    maxResults = max;
+  });
   runner.argParser.addOption("host", help: "Target a different API instance than https://linkieapi.shedaniel.me",
       callback: (value) {
-    hostParsing:
     if (value != null) {
       final uri = Uri.tryParse(value);
       if (uri == null) {
-        logger.warning("Ignoring malformed API host '$value'");
-        break hostParsing;
+        logger.severe("malformed API host '$value'");
+        exit(0);
       }
 
       if (uri.authority.isEmpty) {
-        logger.warning("Ignoring malformed API host '$value'");
-        break hostParsing;
+        logger.severe("malformed API host '$value'");
+        exit(0);
       }
 
       useHttps = uri.scheme == "https";
@@ -79,18 +88,14 @@ Future<void> main(List<String> args) async {
 
 // namespace=yarn&query=method_34741&version=1.19&limit=50&allowClasses=true&allowFields=true&allowMethods=true&translate=quilt-mappings
 Future<Iterable<SearchResponse>> search(String query, Namespace namespace, String version,
-    {int limit = 100,
-    bool allowClasses = true,
-    bool allowMethods = true,
-    bool allowFields = true,
-    Namespace? translateTo}) {
+    {bool allowClasses = true, bool allowMethods = true, bool allowFields = true, Namespace? translateTo}) {
   return client
       .get(
           (useHttps ? Uri.https : Uri.http)(host, "/api/search", {
             "namespace": namespace.apiName,
             "query": query,
             "version": version,
-            "limit": limit.toString(),
+            "limit": maxResults.toString(),
             "allowClasses": allowClasses.toString(),
             "allowMethods": allowMethods.toString(),
             "allowFields": allowFields.toString(),
