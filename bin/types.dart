@@ -69,10 +69,7 @@ class SearchResultMemberEntry implements SearchResultEntry {
   SearchResultMemberEntry(this.ownerObf, this.ownerIntermediary, this.ownerNamed, this.obf, this.intermediary,
       this.named, this.descObf, this.descIntermediary, this.descNamed, this.score, this.memberType);
 
-  factory SearchResultMemberEntry.fromJson(Map<String, dynamic> json) {
-    print("Reading json: $json");
-    return _$SearchResultMemberEntryFromJson(json);
-  }
+  factory SearchResultMemberEntry.fromJson(Map<String, dynamic> json) => _$SearchResultMemberEntryFromJson(json);
 
   String get formatted => "$ownerNamed.$named";
   String get formattedIntermediary => "$ownerIntermediary.$intermediary";
