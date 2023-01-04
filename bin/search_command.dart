@@ -18,11 +18,10 @@ class SearchCommand extends QueryCommand {
     final query = args.rest[0];
     final namespaceString = args.rest[1];
 
-    final namespace = parseEnum(Namespace.values, namespaceString, "namespace");
+    final namespace = parseEnum(Namespace.values, namespaceString, "namespace", Namespace.parse);
 
-    final filters = this.filters;
-    final responses = await search(query, namespace, "1.19",
-        allowClasses: filters.classes, allowFields: filters.fields, allowMethods: filters.methods);
+    final responses = await search(query, namespace, parameters.version,
+        allowClasses: parameters.classes, allowFields: parameters.fields, allowMethods: parameters.methods);
 
     logger.info("${Color.BLUE}${responses.length} ${ansiReset}results\n");
 
@@ -31,7 +30,7 @@ class SearchCommand extends QueryCommand {
         : 0;
 
     for (var response in responses) {
-      response.printToConsole(namespaceString, length);
+      response.printToConsole(namespace.name, length);
     }
   }
 }

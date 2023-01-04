@@ -20,7 +20,7 @@ bool useHttps = true;
 String host = "linkieapi.shedaniel.me";
 
 const encoder = JsonEncoder.withIndent("    ");
-const versionNumber = "0.1.1";
+const versionNumber = "0.1.2";
 final client = Client();
 
 final logger = Logger("linkie");
@@ -87,14 +87,14 @@ Future<void> main(List<String> args) async {
 }
 
 // namespace=yarn&query=method_34741&version=1.19&limit=50&allowClasses=true&allowFields=true&allowMethods=true&translate=quilt-mappings
-Future<Iterable<SearchResponse>> search(String query, Namespace namespace, String version,
+Future<Iterable<SearchResponse>> search(String query, Namespace namespace, String? version,
     {bool allowClasses = true, bool allowMethods = true, bool allowFields = true, Namespace? translateTo}) {
   return client
       .get(
           (useHttps ? Uri.https : Uri.http)(host, "/api/search", {
             "namespace": namespace.apiName,
             "query": query,
-            "version": version,
+            if (version != null) "version": version,
             "limit": maxResults.toString(),
             "allowClasses": allowClasses.toString(),
             "allowMethods": allowMethods.toString(),
@@ -153,21 +153,24 @@ abstract class QueryCommand extends LinkieCommand {
     argParser.addFlag("classes", abbr: "c", negatable: false, help: "Include classes");
     argParser.addFlag("fields", abbr: "f", negatable: false, help: "Include fields");
     argParser.addFlag("methods", abbr: "m", negatable: false, help: "Include methods");
+    argParser.addOption("game-version", abbr: "v", help: "The game version for which to query mappings");
   }
 
-  QueryFilter get filters {
+  QueryParameters get parameters {
     var args = argResults!;
 
     var classes = args.wasParsed("classes");
     var fields = args.wasParsed("fields");
     var methods = args.wasParsed("methods");
+    var version = args["game-version"] as String?;
 
-    if (!(classes || fields || methods)) return QueryFilter(true, true, true);
-    return QueryFilter(classes, fields, methods);
+    if (!(classes || fields || methods)) return QueryParameters(true, true, true, version);
+    return QueryParameters(classes, fields, methods, version);
   }
 }
 
-class QueryFilter {
+class QueryParameters {
   final bool classes, fields, methods;
-  QueryFilter(this.classes, this.fields, this.methods);
+  final String? version;
+  QueryParameters(this.classes, this.fields, this.methods, this.version);
 }

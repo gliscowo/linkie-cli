@@ -11,15 +11,28 @@ import 'linkie.dart';
 part 'types.g.dart';
 
 enum Namespace {
-  yarn("yarn"),
-  intermediary("intermediary"),
-  plasma("plasma"),
-  quilt("quilt-mappings"),
-  mojang("mojang"),
+  yarn("yarn", "y"),
+  intermediary("intermediary", "i"),
+  plasma("plasma", "p"),
+  quilt("quilt-mappings", "q"),
+  mojang("mojang", "m"),
   mcp("mcp");
 
   final String apiName;
-  const Namespace(this.apiName);
+  final String? abbr;
+  const Namespace(this.apiName, [this.abbr]);
+
+  static Namespace parse(String input) {
+    try {
+      return Namespace.values.byName(input);
+    } on ArgumentError {
+      for (var namespace in Namespace.values) {
+        if (namespace.abbr == input) return namespace;
+      }
+
+      throw ArgumentError();
+    }
+  }
 }
 
 abstract class SearchResultEntry {

@@ -19,14 +19,14 @@ class TranslateCommand extends QueryCommand {
     final namespaceString = args.rest[1];
     final translateString = args.rest[2];
 
-    final namespace = parseEnum(Namespace.values, namespaceString, "namespace");
-    final translate = parseEnum(Namespace.values, translateString, "namespace");
+    final namespace = parseEnum(Namespace.values, namespaceString, "namespace", Namespace.parse);
+    final translate = parseEnum(Namespace.values, translateString, "namespace", Namespace.parse);
 
-    var responses = await search(query, namespace, "1.19",
+    var responses = await search(query, namespace, parameters.version,
         translateTo: translate,
-        allowClasses: filters.classes,
-        allowFields: filters.fields,
-        allowMethods: filters.methods);
+        allowClasses: parameters.classes,
+        allowFields: parameters.fields,
+        allowMethods: parameters.methods);
 
     int length = responses.isNotEmpty
         ? responses
@@ -37,7 +37,7 @@ class TranslateCommand extends QueryCommand {
     logger.info("${Color.BLUE}${responses.length} ${ansiReset}results\n");
 
     for (var response in responses) {
-      response.printToConsole(namespaceString, length, translatedNamespace: translateString);
+      response.printToConsole(namespace.name, length, translatedNamespace: translate.name);
     }
   }
 }

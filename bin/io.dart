@@ -11,9 +11,9 @@ String rgb(String text, int color) {
   return "${ansiEscape}38;2;$r;$g;${b}m$text$ansiReset";
 }
 
-E parseEnum<E extends Enum>(Iterable<E> values, String query, String enumName) {
+E parseEnum<E extends Enum>(Iterable<E> values, String query, String enumName, [E Function(String)? getter]) {
   try {
-    return values.byName(query);
+    return (getter ?? values.byName)(query);
   } on ArgumentError {
     throw ArgumentError.value(query, enumName, "No such $enumName");
   }
