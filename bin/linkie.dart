@@ -8,6 +8,7 @@ import 'package:console/console.dart';
 import 'package:http/http.dart';
 import 'package:logging/logging.dart';
 
+import 'list_namespace_command.dart';
 import 'search_command.dart';
 import 'translate_command.dart';
 import 'types.dart';
@@ -81,6 +82,7 @@ Future<void> main(List<String> args) async {
 
   runner.addCommand(TranslateCommand());
   runner.addCommand(SearchCommand());
+  runner.addCommand(ListNamespacesCommand());
   await runner.run(args);
 
   client.close();
